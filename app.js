@@ -38,4 +38,10 @@ function makeid(length) {
   return result;
 }
 
+const id = makeid(20)
+
+setInterval(() => {
+  console.log(`${new Date()} : ${id}`)
+}, 5000);
+
 module.exports = app;
