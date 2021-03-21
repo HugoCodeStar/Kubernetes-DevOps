@@ -15,6 +15,28 @@ app.get('/', (req, res) => {
   res.send("Simple page")
 })
 
+// https://stackoverflow.com/a/1349426
+function makeid(length) {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
+const id = makeid(20)
+const logString = `${new Date()} : ${id}`
+
+setInterval(() => {
+  console.log(logString)
+}, 5000);
+
+app.get('/status', (req, res) => {
+  res.send(logString)
+})
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -31,21 +53,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// https://stackoverflow.com/a/1349426
-function makeid(length) {
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
 
-const id = makeid(20)
-
-setInterval(() => {
-  console.log(`${new Date()} : ${id}`)
-}, 5000);
 
 module.exports = app;
