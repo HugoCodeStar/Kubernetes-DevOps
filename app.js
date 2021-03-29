@@ -3,6 +3,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const fs = require('fs');
+
+const directory = path.join('/', 'usr', 'src', 'app', 'files')
+const filePath = path.join(directory, 'pingpong.txt')
 
 var app = express();
 
@@ -33,8 +37,21 @@ setInterval(() => {
   console.log(logString)
 }, 5000);
 
-app.get('/status', (req, res) => {
-  res.send(logString)
+const getFile = async () => new Promise(res => {
+  fs.readFile(filePath, (err, buffer) => {
+    if (err) return console.log('FAILED TO READ FILE', '----------------', err)
+    res(buffer)
+  })
+})
+
+async function readpingpong() {
+  const pingpong = await getFile()
+  return pingpong.toString()
+}
+
+app.get('/status', async (req, res) => {
+  const pingpong = await readpingpong()
+  res.send(logString + '\n' + pingpong)
 })
 
 // catch 404 and forward to error handler
