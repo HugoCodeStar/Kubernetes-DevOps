@@ -3,7 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const fs = require('fs/promises');
+const fs = require('fs');
 
 const directory = path.join('/', 'usr', 'src', 'app', 'files')
 const filePath = path.join(directory, 'log.txt')
@@ -27,15 +27,27 @@ function makeid(length) {
 }
 
 const id = makeid(20)
+let logString = ""
 
-async function writelog() {
-  await fs.mkdir(directory, {recursive:true})
-  const logString = `${new Date()} : ${id}`
-  await fs.writeFile(filePath, logString)
+const getFile = async () => new Promise(res => {
+  fs.readFile(filePath, (err, buffer) => {
+    if (err) return console.log('FAILED TO READ FILE', '----------------', err)
+    res(buffer)
+  })
+})
+
+async function readlog() {
+  const log = await getFile()
+  logString = log.toString()
+  console.log(logString)
 }
 
+app.get('/', (req, res) => {
+  res.send(logString)
+})
+
 setInterval(async () => {
-  await writelog()
+  await readlog()
 }, 5000);
 
 
