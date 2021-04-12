@@ -4,9 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const fs = require('fs');
+const axios = require('axios');
 
-const directory = path.join('/', 'usr', 'src', 'app', 'files')
-const filePath = path.join(directory, 'pingpong.txt')
+const directory = path.join(__dirname, 'public', 'img')
+const filePath = path.join(directory, 'picsum.jpg')
 
 var app = express();
 
@@ -14,6 +15,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(express.static('public'))
 
 app.get('/', (req, res) => {
   res.send("Simple page")
@@ -37,6 +40,21 @@ setInterval(() => {
   console.log(logString)
 }, 5000);
 
+const fileAlreadyExists = async () => new Promise(res => {
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats) return res(false)
+    return res(true)
+  })
+})
+
+const findAFile = async () => {
+  if (await fileAlreadyExists()) return
+
+  await new Promise(res => fs.mkdir(directory, (err) => res()))
+  const response = await axios.get('https://picsum.photos/1200', { responseType: 'stream' })
+  response.data.pipe(fs.createWriteStream(filePath))
+}
+
 const getFile = async () => new Promise(res => {
   fs.readFile(filePath, (err, buffer) => {
     if (err) return console.log('FAILED TO READ FILE', '----------------', err)
@@ -54,22 +72,7 @@ app.get('/status', async (req, res) => {
   res.send(logString + '\n' + pingpong)
 })
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-
+findAFile();
 
 module.exports = app;
