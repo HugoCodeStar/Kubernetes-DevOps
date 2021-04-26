@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -6,7 +8,7 @@ var logger = require('morgan');
 const fs = require('fs');
 const axios = require('axios');
 
-const directory = path.join(__dirname, 'public', 'img')
+const directory = path.join(__dirname, 'public')
 const filePath = path.join(directory, 'picsum.jpg')
 
 var app = express();
@@ -17,10 +19,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(express.static('public'))
-
-app.get('/', (req, res) => {
-  res.send("Simple page")
-})
 
 // https://stackoverflow.com/a/1349426
 function makeid(length) {
@@ -55,23 +53,11 @@ const findAFile = async () => {
   response.data.pipe(fs.createWriteStream(filePath))
 }
 
-const getFile = async () => new Promise(res => {
-  fs.readFile(filePath, (err, buffer) => {
-    if (err) return console.log('FAILED TO READ FILE', '----------------', err)
-    res(buffer)
-  })
-})
-
-async function readpingpong() {
-  const pingpong = await getFile()
-  return pingpong.toString()
-}
-
 app.get('/status', async (req, res) => {
-  const pingpong = await readpingpong()
-  res.send(logString + '\n' + pingpong)
+  const pingpong = await axios.get('http://pingpong-svc:2346')
+  console.log(pingpong)
+  res.send(process.env.MESSAGE + '\n' + logString + '\n' + pingpong.data)
 })
-
 
 findAFile();
 
